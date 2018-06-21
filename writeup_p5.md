@@ -49,37 +49,42 @@ I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an 
 
 I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
 
-Here is an example using the `YUV` color space and HOG parameters of `orientations=9`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
+Here is an example using the `LUV` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
 
 
 ![Car NotCar HOG][image6]
 
 #### 2. Explain how you settled on your final choice of HOG parameters.
 
-I tried various combinations of parameters, it seems that the most imortant one is 'pix _per_cell', using 16 and 32 will get a image without good representation of cars and not cars. And 8 will produce a reasonable impression to distinguish the car and not car classes. Having 9 or 11 for 'orient' is not so different. I use 9 for computation. 'cell_per_block' is working better with 2 than 4.  
+I tried various combinations of parameters, it seems that the most imortant one is 'pix _per_cell', using 16 and 32 will get a image without good representation of cars and not cars. And 8 will produce a reasonable impression to distinguish the car and not car classes. Having 8 or 11 for 'orient' is not so different. I use 8 for computation. 'cell_per_block' is working better with 2 than 4.  
 
 #### 3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
 I trained a linear SVM using
-'color_space = 'YCrCb' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
-orient = 9  # HOG orientations
+'color_space = 'LUV' # Can be RGB, HSV, LUV, HLS, YUV, YCrCb
+orient = 8  # HOG orientations
 pix_per_cell = 8 # HOG pixels per cell
 cell_per_block = 2 # HOG cells per block
 hog_channel = o # Can be 0, 1, 2, or "ALL"
-spatial_size = (16, 16) # Spatial binning dimensions
+spatial_size = (32, 32) # Spatial binning dimensions
 hist_bins = 16    # Number of histogram bins
 spatial_feat = True # Spatial features on or off
 hist_feat = True # Histogram features on or off
 hog_feat = True # HOG features on or off
 y_start_stop = [400, 700] # Min and max in y to search in slide_window()'
 
+In the 'search_windows()' function, 
+'prediction = clf.decision_function(test_features)
+if prediction > 0.5:'
+was used to threshold the detections with higher confidence in prediction. This combined with heatmap threshold to decrease the false positive rate in detection.
+
 ### Sliding Window Search
 
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
 I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
-'y_buffer = [[400, 490], [410,500], [400,500],[420,520], [400,560],[430,590], [400,650],[410,710]]
-xy_windows = [(30,30), (30,30), (50,50), (50, 50), (80,80), (80,80), (150,150), (150,150)]'
+'y_buffer = [[400, 528], [410,538], [400,548],[420,568], [400,576],[410,586], [400,650],[410,700]]
+xy_windows = [(64,64), (64,64), (74,74), (74, 74), (86,86), (86,86), (125,125), (125,125)]'
 
 The road to the horizon is searched with smaller windows, and gradually to the nearer scene with bigger windows. They are overlapped to better cover the cars with light colors. 
 
@@ -87,7 +92,7 @@ The road to the horizon is searched with smaller windows, and gradually to the n
 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-Ultimately I searched on 3 scales using YCrCb o-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+Ultimately I searched on 3 scales using LUV 0-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
 
 ![Windows combined][image2]
 ![Windows heatmap][image3]
